@@ -31,7 +31,6 @@ EXPOSE 33000
 # A call to http://localhost:33000/check_health will be made. The api returns 0 if the database is reachable, 1 otherwise.
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:33000/check_health || exit 1
-# CMD [ "curl", "-f", "http://localhost:33000/check_health" ]
 
 # Create a non-root user 'appuser' and switch to this user
 RUN useradd --create-home appuser
