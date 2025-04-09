@@ -3,6 +3,7 @@ FROM python:3.11-slim
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./entrypoint.sh /tmp/entrypoint.sh
 COPY ./src /app/src
+COPY ./data /app/data
 
 RUN chmod +x /tmp/entrypoint.sh
 
@@ -32,9 +33,13 @@ EXPOSE 33000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:33000/check_health || exit 1
 
-# Create a non-root user 'appuser' and switch to this user
+# Create a non-root user 'appuser'
 RUN useradd --create-home appuser
+# add write permissions to the /app/data directory
+RUN chown -R appuser:appuser /app/data
+# switch to this user
 USER appuser
+
 
 # CMD with JSON notation
 CMD ["/tmp/entrypoint.sh"]

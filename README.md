@@ -4,8 +4,9 @@ emoji: ⚡
 colorFrom: purple
 colorTo: yellow
 sdk: docker
+app_port: 33000
 pinned: false
-short_description: API for model training and evaluation of fraudulent transactions
+short_description: API for model training and eval of fraudulent transactions
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference

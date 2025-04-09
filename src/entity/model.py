@@ -3,6 +3,8 @@ from sklearn.pipeline import Pipeline
 import joblib
 import logging
 
+logger = logging.getLogger(__name__)
+
 class Model:
     _current: Optional['Model'] = None
     
@@ -57,9 +59,14 @@ class Model:
         """
         Save the model to the given path
         """
+        logging.info(f"Saving model to {path}")
         data = {
             'pipeline': pipeline,
             'metadata': metadata
         }
         joblib.dump(data, path)
-        logging.info(f"Model saved to {path}")
+        logging.info("Model saved")
+
+        # Update the current instance
+        cls._current = Model(pipeline=pipeline, metadata=metadata)
+        logging.info("Model instance updated")

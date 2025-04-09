@@ -1,7 +1,7 @@
 import os
 import logging
 import secrets
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import (
     FastAPI,
     Request,
@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from starlette.status import (
     HTTP_200_OK,
     HTTP_403_FORBIDDEN,
+    HTTP_412_PRECONDITION_FAILED,
     HTTP_500_INTERNAL_SERVER_ERROR)
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
@@ -26,8 +27,13 @@ from src.repository.common import get_session
 from src.service.model import (
     train_model_from_scratch,
     predict,
+    all_algorithms,
 )
 from src.entity.model import Model
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------------------
 
@@ -68,15 +74,17 @@ def redirect_to_docs():
 
 # ------------------------------------------------------------------------------
 @app.get("/train_model", tags=["model"])
-async def train_model(background_tasks: BackgroundTasks):
+async def train_model(background_tasks: BackgroundTasks,
+                      limit: Optional[int] = None,
+                      algorithm: Optional[all_algorithms] = 'MLP'):
     """
     Train the model
     """
     background_tasks.add_task(
         func=train_model_from_scratch,
-        limit=None,
+        limit=limit,
         evaluate=False,
-        algo='MLP')
+        algo=algorithm)
     
     return {"message": "Model training in progress"}
 
@@ -104,7 +112,8 @@ async def make_prediction(params: ModelInput):
     """
     # check the presence of 'model.pkl' file in data/
     if not os.path.exists("./data/model.pkl"):
-        return {"message": "Model not trained. Please train the model first."}
+        raise HTTPException(
+            status_code=HTTP_412_PRECONDITION_FAILED, detail="Model not trained. Please train the model first.")
 
     # Load the model
     model = Model.get_instance()

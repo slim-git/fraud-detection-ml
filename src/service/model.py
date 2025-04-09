@@ -1,6 +1,6 @@
+import logging
 import pandas as pd
 from typing import Optional, Tuple, Dict, Literal, Any
-import logging
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
@@ -10,6 +10,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from src.enums import Feature
 from src.repository.transaction_repo import get_multiple_rows
 from src.entity.model import Model
+
+logger = logging.getLogger(__name__)
 
 def preprocess_data(df: pd.DataFrame, test_size: float = 0.2) -> Tuple:
     """
@@ -120,6 +122,8 @@ def train_model_from_scratch(limit: Optional[int] = None,
     metadata = {
         "model_name": algo,
         "version": "1.0",
+        "training_data_size": len(data),
+        "training_datetime": pd.Timestamp.now().isoformat(),
     }
     Model.save_model(pipeline, metadata, output_path)
 
@@ -168,7 +172,7 @@ def create_pipeline(algo: all_algorithms = 'XGBoost') -> Pipeline:
         classifier = GradientBoostingClassifier()
     elif algo == 'MLP':
         from sklearn.neural_network import MLPClassifier
-        classifier = MLPClassifier(max_iter=1000)
+        classifier = MLPClassifier(max_iter=1000, verbose=True)
     elif algo == 'LightGBM':
         from lightgbm import LGBMClassifier
         classifier = LGBMClassifier()
